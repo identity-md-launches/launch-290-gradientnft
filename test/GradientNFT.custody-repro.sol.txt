@@ -1,0 +1,36 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.26;
+
+// Expected-failing reproductions for the reported unconditional zero-balance requirement.
+// Copy this file to test/scratch/GradientNFT.custody-repro.t.sol, then run:
+// forge test --out test/scratch/out --cache-path test/scratch/cache --match-contract GradientCustodyRequirementProbe -vv
+// Remove that scratch .sol file before running the passing regression suite.
+// These assertions express the approved requirement; they do not bless the observed nonzero balances.
+import {Test} from "forge-std/Test.sol";
+import {LaunchToken} from "../../src/LaunchToken.sol";
+import {GradientNFT} from "../../src/GradientNFT.sol";
+
+contract ForceEtherAtCreation {
+    constructor(address payable recipient) payable {
+        selfdestruct(recipient);
+    }
+}
+
+contract GradientCustodyRequirementProbe is Test {
+    function test_directGradTransferViolatesZeroBalance() public {
+        LaunchToken token = new LaunchToken();
+        GradientNFT nft = new GradientNFT(address(token));
+        assertEq(token.balanceOf(address(nft)), 0);
+        assertTrue(token.transfer(address(nft), 1));
+        assertEq(token.balanceOf(address(nft)), 0, "approved requirement: NFT always holds zero GRAD");
+    }
+
+    function test_forcedEtherViolatesZeroBalance() public {
+        LaunchToken token = new LaunchToken();
+        GradientNFT nft = new GradientNFT(address(token));
+        vm.deal(address(this), 1);
+        assertEq(address(nft).balance, 0);
+        new ForceEtherAtCreation{value: 1}(payable(address(nft)));
+        assertEq(address(nft).balance, 0, "approved requirement: NFT always holds zero ETH");
+    }
+}
