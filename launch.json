@@ -1,0 +1,22 @@
+{
+  "kind": "evm_project",
+  "token": {
+    "contract": "LaunchToken",
+    "name": "Gradients",
+    "symbol": "GRAD",
+    "decimals": 18
+  },
+  "contracts": [
+    {
+      "contract": "GradientNFT",
+      "constructorArgs": ["$token"]
+    }
+  ],
+  "pool": {
+    "pairedCurrency": "0x0000000000000000000000000000000000000000",
+    "fee": 3000,
+    "tickSpacing": 60,
+    "initialPrice": "79228162514264337593543950336"
+  },
+  "notes": "Intended for Sepolia. LaunchToken is src/LaunchToken.sol; GradientNFT is src/GradientNFT.sol. GradientNFT stores the launch token address immutably and requires no token balance at deployment. Neither contract has a privileged owner or requires initialization calls. Users obtain GRAD from the native ETH/GRAD launch pool and approve GradientNFT before minting. Each NFT costs 10,000 GRAD, transferred directly from the minter to the dead address. Art is determined solely by token id, so mint order determines the art received. The pool has no hook; initialPrice is decimal sqrtPriceX96, with the effective opening price derived from pinned policy when applicable. The factory supplies the LP and MerkleDistributor. Policy, signed artifact linkage, publication, attestation, admission and deployment are handled by services."
+}
